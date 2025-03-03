@@ -1,81 +1,73 @@
 // pages/api/upload-logs.js
-
-import { IncomingForm } from 'formidable';
-import { Queue } from 'bullmq';
+import nextConnect from 'next-connect';
+import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import fs from 'fs';
+import { supabase } from '../../lib/supabaseClient';
+import { enqueueLogFile } from '../../lib/bullmq';
 
-// Create a BullMQ queue instance with Redis connection configuration
-const logQueue = new Queue('log-processing-queue', {
-    connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+// Multer সেটআপ: আমরা memory storage ব্যবহার করছি যাতে আপলোড হওয়া ফাইলটি Buffer আকারে থাকে।
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 }, // উদাহরণস্বরূপ: 50MB ফাইল সাইজ লিমিট
+});
+
+const apiRoute = nextConnect({
+    onError(error, req, res, next) {
+        console.error('API Error:', error);
+        res.status(500).json({ error: 'Server error occurred' });
+    },
+    onNoMatch(req, res) {
+        res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     },
 });
 
-// Disable Next.js built-in bodyParser to handle multipart/form-data
+// Next.js-এ default body parser বন্ধ করতে হবে যাতে Multer সঠিকভাবে কাজ করে।
 export const config = {
     api: {
         bodyParser: false,
     },
 };
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        // Only POST requests are allowed
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+apiRoute.use(upload.single('file')); // 'file' হলো form data field এর নাম
 
-    // Create a new IncomingForm instance from formidable to parse the file upload
-    const form = new IncomingForm({
-        uploadDir: path.join(process.cwd(), 'uploads'),
-        keepExtensions: true,
-    });
-
-    // Parse the request containing the form data
-    form.parse(req, async (err, fields, files) => {
-        if (err) {
-            console.error('Error parsing the form:', err);
-            return res.status(500).json({ error: 'Error parsing the form data' });
+apiRoute.post(async (req, res) => {
+    try {
+        // ফাইলটি পাওয়া যাচ্ছে কিনা যাচাই করুন
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file provided' });
         }
 
-        try {
-            // Assume the uploaded file field is named "file"
-            const uploadedFile = files.file;
-            if (!uploadedFile) {
-                return res.status(400).json({ error: 'No file uploaded' });
-            }
+        // অতিরিক্ত ফাইল ভ্যালিডেশন করতে পারেন (যেমন ফাইল টাইপ, ফাইল সাইজ ইত্যাদি)
 
-            // Generate a unique fileId using uuid
-            const fileId = uuidv4();
-            // Construct a new file path using fileId and original file extension
-            const newFilePath = path.join(
-                path.dirname(uploadedFile.filepath),
-                fileId + path.extname(uploadedFile.originalFilename)
-            );
-            // Rename the file to the new unique file name
-            fs.renameSync(uploadedFile.filepath, newFilePath);
+        // একটি ইউনিক fileId তৈরি করুন
+        const fileId = uuidv4();
+        const fileName = `${fileId}-${req.file.originalname}`;
 
-            // Enqueue a new job into BullMQ with metadata including fileId and filePath
-            await logQueue.add(
-                'process-log',
-                { fileId, filePath: newFilePath },
-                {
-                    attempts: 3, // Retry limit of 3 attempts on failure
-                    // Prioritize smaller files (priority 1) vs larger files (priority 2)
-                    priority: uploadedFile.size < 1000000 ? 1 : 2,
-                }
-            );
-
-            // Respond with success message and fileId
-            return res.status(200).json({
-                message: 'File uploaded and job enqueued',
-                fileId,
+        // Supabase Storage-এ ফাইল আপলোড করুন
+        const { data, error: uploadError } = await supabase
+            .storage
+            .from('logs') // নিশ্চিত করুন যে আপনার Supabase Storage bucket এর নাম 'logs'
+            .upload(fileName, req.file.buffer, {
+                contentType: req.file.mimetype,
             });
-        } catch (error) {
-            console.error('Error processing file upload:', error);
-            return res.status(500).json({ error: 'Internal server error' });
+
+        if (uploadError) {
+            console.error('Supabase Upload Error:', uploadError);
+            return res.status(500).json({ error: uploadError.message });
         }
-    });
-}
+
+        // Supabase Storage থেকে ফাইলের path গ্রহণ করুন
+        const filePath = data.path;
+
+        // BullMQ কিউতে জব enqueue করুন
+        const job = await enqueueLogFile({ fileId, filePath });
+
+        // সফল রেসপন্স রিটার্ন করুন
+        res.status(200).json({ jobId: job.id, fileId, filePath });
+    } catch (error) {
+        console.error('Upload API Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+export default apiRoute;
