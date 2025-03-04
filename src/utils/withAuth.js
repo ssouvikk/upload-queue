@@ -10,12 +10,13 @@ export function withAuth(Component) {
         const router = useRouter();
 
         useEffect(() => {
-            // If no user in session, redirect to login page
-            if (authData && !authData.user) {
+            // If authData is not loading and user is not logged in, redirect to login page
+            if (authData !== null && (!authData || !authData.user)) {
                 router.replace(`/login?redirect=${router.pathname}`);
             }
         }, [authData, router]);
 
+        // If authData is null or user is not available, show Loader
         if (!authData || !authData.user) {
             return <Loader message="Authenticating..." spinnerSize={64} spinnerColor="border-blue-500" />;
         }

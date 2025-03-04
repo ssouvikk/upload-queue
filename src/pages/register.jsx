@@ -4,6 +4,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
 import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
+import Loader from '@/components/Loader';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -11,12 +12,17 @@ const Register = () => {
     const { authData } = useContext(AuthContext);
     const router = useRouter();
 
-    // Redirect if user is already logged in
+    // Redirect if user is already logged in and show Loader until redirection
     useEffect(() => {
-        if (authData?.user) {
+        if (authData && authData.user) {
             router.replace('/');
         }
     }, [authData, router]);
+
+    // If user is logged in, show Loader to prevent flicker of register page
+    if (authData && authData.user) {
+        return <Loader message="Redirecting..." spinnerSize={64} spinnerColor="border-blue-500" />;
+    }
 
     // Function to handle registration form submission
     const handleRegister = async (e) => {

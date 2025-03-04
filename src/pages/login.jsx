@@ -4,6 +4,7 @@ import { supabase } from '@/utils/supabaseClient';
 import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
+import Loader from '@/components/Loader'; // import Loader if not already
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,13 +12,17 @@ const Login = () => {
     const { authData, setAuthData } = useContext(AuthContext);
     const router = useRouter();
 
-    // Redirect if user is already logged in
+    // Redirect if user is already logged in and show Loader until redirection
     useEffect(() => {
-        if (authData?.user) {
-            const redirectPath = router.query.redirect || '/';
-            router.replace(redirectPath);
+        if (authData && authData.user) {
+            router.replace(router.query.redirect || '/');
         }
     }, [authData, router]);
+
+    // If user is logged in, show Loader to prevent flicker of login page
+    if (authData && authData.user) {
+        return <Loader message="Redirecting..." spinnerSize={64} spinnerColor="border-blue-500" />;
+    }
 
     // Function to handle login submission
     const handleLogin = async (e) => {
@@ -27,7 +32,6 @@ const Login = () => {
         if (error) {
             toast.error(error.message);
         } else {
-            console.log(data, 'data');
             // Successful login; update context and store session in localStorage
             setAuthData(data.session);
             localStorage.setItem('supabaseSession', JSON.stringify(data.session));
