@@ -5,7 +5,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
 
@@ -31,7 +31,7 @@ services:
     restart: always
     volumes:
       - ./:/app
-
+  
   worker:
     build:
       context: .
@@ -49,23 +49,23 @@ services:
 
   supabase-db:
     image: supabase/postgres:15.8.1.047
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf # Required for versions 14.1.0 and beyond
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf  # Required for versions 14.1.0 and beyond
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - supabase-data:/var/lib/postgresql/data
 
   supabase-gotrue:
-    image: supabase/gotrue:latest
+    image: supabase/gotrue:v2.0.2   # Use a specific version instead of 'latest'
     environment:
       # Configure GoTrue to connect to the Postgres database
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://postgres:postgres@supabase-db:5432/postgres
-      GOTRUE_JWT_SECRET: your_jwt_secret # Change this secret as needed
+      GOTRUE_JWT_SECRET: your_jwt_secret    # Change this secret as needed
       GOTRUE_SITE_URL: http://localhost:3000
     ports:
       - "9999:9999"
@@ -73,7 +73,7 @@ services:
       - supabase-db
 
   supabase-realtime:
-    image: supabase/realtime:latest
+    image: supabase/realtime:v2.4.0   # Use a specific version instead of 'latest'
     environment:
       DB_HOST: supabase-db
       DB_PORT: "5432"
