@@ -1,50 +1,81 @@
-// File: workers/logWorker.js
+// File: src/workers/logWorker.js
 // Worker for processing log files using BullMQ
 
-const { Worker } = require('bullmq');
-const config = require('../config/config');
-const dbService = require('../services/dbService'); // For storing processed stats
+import { Worker } from 'bullmq';
+import fs from 'fs';
+import readline from 'readline';
+import config from '../config/config';
+import { saveLogStats } from '../services/dbService'; // Service function to save processed log stats
 
-const worker = new Worker('log-processing-queue', async job => {
-    // Process the log file
-    const { fileId, filePath } = job.data;
+// Initialize the worker for 'log-processing-queue'
+const worker = new Worker(
+    'log-processing-queue',
+    async job => {
+        const { fileId, filePath } = job.data;
+        try {
+            // Create a read stream for the file located at filePath
+            const fileStream = fs.createReadStream(filePath);
 
-    // Use streaming to read and process the log file
-    // This is a simplified example; actual implementation would use streams and proper parsing
-    try {
-        // Example: Process file line by line and parse log entries
-        // Save the results to Supabase via dbService
+            // Use readline to process the file line by line
+            const rl = readline.createInterface({
+                input: fileStream,
+                crlfDelay: Infinity,
+            });
 
-        // Pseudo-code:
-        // const fileStream = getFileStream(filePath);
-        // fileStream.on('data', (line) => {
-        //   // Parse line and extract data
-        // });
-        // fileStream.on('end', async () => {
-        //   await dbService.saveLogStats(processedData);
-        // });
+            // Placeholder for processed results
+            const processedData = [];
 
-        console.log(`Processing file: ${filePath}`);
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+            // Process each line and parse log entries
+            for await (const line of rl) {
+                // Example log format: "[2025-02-20T10:00:00Z] ERROR Database timeout {\"userId\": 123, \"ip\": \"192.168.1.1\"}"
+                // Regular expression to parse the log entry
+                const regex = /^\[(.*?)\]\s+(\w+)\s+(.*?)(\s+\{.*\})?$/;
+                const match = line.match(regex);
+                if (match) {
+                    const [, timestamp, level, message, jsonPayload] = match;
+                    let additionalData = {};
+                    if (jsonPayload) {
+                        try {
+                            additionalData = JSON.parse(jsonPayload.trim());
+                        } catch (e) {
+                            // If JSON parsing fails, log error and continue processing next line
+                            console.error('Error parsing JSON payload:', e);
+                        }
+                    }
+                    processedData.push({
+                        fileId,
+                        timestamp,
+                        level,
+                        message,
+                        ...additionalData,
+                    });
+                }
+            }
 
-        // On successful processing, return result
-        return { success: true };
-    } catch (error) {
-        console.error('Error processing log file:', error);
-        throw error;
+            // Save the processed log stats to Supabase via dbService
+            await saveLogStats(processedData);
+
+            // Return result on successful processing
+            return { success: true, processedCount: processedData.length };
+        } catch (error) {
+            console.error(`Error processing file ${filePath}:`, error);
+            // Throw error to let BullMQ handle retry based on configuration
+            throw error;
+        }
+    },
+    {
+        connection: { url: config.redisUrl },
+        concurrency: 4, // Process up to 4 jobs concurrently
     }
-}, {
-    connection: { url: config.redisUrl },
-    concurrency: 4, // Process 4 jobs concurrently
-});
+);
 
+// Listen to worker events for logging and debugging
 worker.on('completed', job => {
-    console.log(`Job ${job.id} has completed!`);
+    console.log(`Job ${job.id} has completed successfully.`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`Job ${job.id} has failed with error ${err.message}`);
+    console.error(`Job ${job.id} failed with error: ${err.message}`);
 });
 
-module.exports = worker;
+export default worker;
