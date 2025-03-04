@@ -3,15 +3,14 @@ FROM node:20.11.1
 
 WORKDIR /app
 
+# Copy package.json and install dependencies
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# For development, if source code is mounted as volume, this copy step may be done during build,
-# but after container start volume mapping will override host code.
+# Copy source code (will be overridden by volume mapping in development)
 COPY . .
 
 EXPOSE 3000
 
-# For production build: RUN npm run build
-# Run dev server directly in development mode:
+# Run development server directly
 CMD ["npm", "run", "dev"]

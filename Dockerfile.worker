@@ -1,12 +1,13 @@
 # Dockerfile.worker
-
 FROM node:20.11.1
+
 WORKDIR /worker
 
-
+# Copy package.json and install dependencies
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
+# Copy source code (will be overridden by volume mapping in development)
 COPY . .
 
 # Install nodemon globally for hot reload

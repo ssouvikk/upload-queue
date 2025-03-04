@@ -25,10 +25,13 @@ services:
       - REDIS_PORT=6379
     depends_on:
       - redis
+      - supabase-db
+      - supabase-gotrue
+      - supabase-realtime
     restart: always
     volumes:
       - ./:/app
-  
+
   worker:
     build:
       context: .
@@ -40,12 +43,13 @@ services:
       - SUPABASE_KEY=${SUPABASE_KEY}
     depends_on:
       - redis
+      - supabase-db
     volumes:
       - ./:/worker
 
   supabase-db:
     image: supabase/postgres:15.8.1.047
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf  # Required for versions 14.1.0 and beyond
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf # Required for versions 14.1.0 and beyond
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
@@ -54,6 +58,31 @@ services:
       - "5432:5432"
     volumes:
       - supabase-data:/var/lib/postgresql/data
+
+  supabase-gotrue:
+    image: supabase/gotrue:latest
+    environment:
+      # Configure GoTrue to connect to the Postgres database
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:postgres@supabase-db:5432/postgres
+      GOTRUE_JWT_SECRET: your_jwt_secret # Change this secret as needed
+      GOTRUE_SITE_URL: http://localhost:3000
+    ports:
+      - "9999:9999"
+    depends_on:
+      - supabase-db
+
+  supabase-realtime:
+    image: supabase/realtime:latest
+    environment:
+      DB_HOST: supabase-db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "4000:4000"
+    depends_on:
+      - supabase-db
 
 volumes:
   redis-data:
