@@ -3,32 +3,48 @@ import '../styles/globals.css';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import { NotificationProvider } from '../context/NotificationContext';
 import { AuthProvider } from '../context/AuthContext';
 import Layout from '@/components/Layout';
 import { initializeTokens } from '@/utils/tokenManager';
+import { useEffect, useState } from 'react';
+import Loader from '@/components/Loader';
+import Router from 'next/router';
 
 initializeTokens();
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { refetchOnWindowFocus: false },
-  },
-});
+const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
 
 function MyApp({ Component, pageProps }) {
+  const [loading, setLoading] = useState(false);
+
+  // Loader for route change
+  useEffect(() => {
+    const handleStart = () => setLoading(true);
+    const handleComplete = () => setLoading(false);
+
+    Router.events.on('routeChangeStart', handleStart);
+    Router.events.on('routeChangeComplete', handleComplete);
+    Router.events.on('routeChangeError', handleComplete);
+
+    return () => {
+      Router.events.off('routeChangeStart', handleStart);
+      Router.events.off('routeChangeComplete', handleComplete);
+      Router.events.off('routeChangeError', handleComplete);
+    };
+  }, []);
+
   const getLayout = Component.noLayout
     ? (page) => page
     : (page) => <Layout>{page}</Layout>;
 
   return (
     <AuthProvider>
-      {/* <NotificationProvider> */}
-        <QueryClientProvider client={queryClient}>
-          {getLayout(<Component {...pageProps} />)}
-          <ToastContainer position="top-right" autoClose={5000} />
-        </QueryClientProvider>
-      {/* </NotificationProvider> */}
+      <QueryClientProvider client={queryClient}>
+        {loading && (
+          <Loader message="Loading..." spinnerSize={64} spinnerColor="border-blue-500" />
+        )}
+        {getLayout(<Component {...pageProps} />)}
+        <ToastContainer position="top-right" autoClose={5000} />
+      </QueryClientProvider>
     </AuthProvider>
   );
 }

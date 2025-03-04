@@ -1,5 +1,5 @@
 // src/pages/index.tsx
-import { withAuth } from '@/utils/auth'
+import { withAuth } from '@/utils/withAuth'
 
 const HomePage = () => {
   return (

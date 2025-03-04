@@ -14,7 +14,7 @@ instance.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor: 403 হলে রিফ্রেশ টোকেন
+// Response interceptor: 403 error handling
 instance.interceptors.response.use(
     (response) => {
         if (response.data && response.data.message) {
