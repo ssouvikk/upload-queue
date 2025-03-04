@@ -1,11 +1,22 @@
 // File: pages/register.js
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
+import AuthContext from '../context/AuthContext';
+import { useRouter } from 'next/router';
 
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const { authData } = useContext(AuthContext);
+    const router = useRouter();
+
+    // Redirect if user is already logged in
+    useEffect(() => {
+        if (authData?.user) {
+            router.replace('/');
+        }
+    }, [authData, router]);
 
     // Function to handle registration form submission
     const handleRegister = async (e) => {
@@ -14,7 +25,6 @@ const Register = () => {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
             toast.error(error.message);
-            setMessage('');
         } else {
             toast.success('Registration successful');
         }
@@ -43,5 +53,4 @@ const Register = () => {
 }
 
 Register.noLayout = true;
-
 export default Register;

@@ -1,15 +1,23 @@
 // File: pages/login.js
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 
-const Login = () =>  {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { setAuthData } = useContext(AuthContext);
+    const { authData, setAuthData } = useContext(AuthContext);
     const router = useRouter();
+
+    // Redirect if user is already logged in
+    useEffect(() => {
+        if (authData?.user) {
+            const redirectPath = router.query.redirect || '/';
+            router.replace(redirectPath);
+        }
+    }, [authData, router]);
 
     // Function to handle login submission
     const handleLogin = async (e) => {
@@ -19,6 +27,7 @@ const Login = () =>  {
         if (error) {
             toast.error(error.message);
         } else {
+            console.log(data, 'data');
             // Successful login; update context and store session in localStorage
             setAuthData(data.session);
             localStorage.setItem('supabaseSession', JSON.stringify(data.session));
