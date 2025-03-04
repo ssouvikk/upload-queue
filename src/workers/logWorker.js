@@ -1,13 +1,13 @@
 // File: src/workers/logWorker.js
-// Worker for processing log files using BullMQ
+// Worker for processing log files using BullMQ with centralized error handling and logging
 
 import { Worker } from 'bullmq';
 import fs from 'fs';
 import readline from 'readline';
-import config from '../config/config';
-import { saveLogStats } from '../services/dbService'; // Service function to save processed log stats
+import config from '@/config/config';
+import { saveLogStats } from '@/services/dbService';
+import logger from '@/config/logger';
 
-// Initialize the worker for 'log-processing-queue'
 const worker = new Worker(
     'log-processing-queue',
     async job => {
@@ -15,7 +15,6 @@ const worker = new Worker(
         try {
             // Create a read stream for the file located at filePath
             const fileStream = fs.createReadStream(filePath);
-
             // Use readline to process the file line by line
             const rl = readline.createInterface({
                 input: fileStream,
@@ -39,7 +38,7 @@ const worker = new Worker(
                             additionalData = JSON.parse(jsonPayload.trim());
                         } catch (e) {
                             // If JSON parsing fails, log error and continue processing next line
-                            console.error('Error parsing JSON payload:', e);
+                            logger.error('Error parsing JSON payload: ' + e.message);
                         }
                     }
                     processedData.push({
@@ -54,11 +53,10 @@ const worker = new Worker(
 
             // Save the processed log stats to Supabase via dbService
             await saveLogStats(processedData);
-
             // Return result on successful processing
             return { success: true, processedCount: processedData.length };
         } catch (error) {
-            console.error(`Error processing file ${filePath}:`, error);
+            logger.error(`Error processing file ${filePath}: ${error.message}`);
             // Throw error to let BullMQ handle retry based on configuration
             throw error;
         }
@@ -71,11 +69,11 @@ const worker = new Worker(
 
 // Listen to worker events for logging and debugging
 worker.on('completed', job => {
-    console.log(`Job ${job.id} has completed successfully.`);
+    logger.info(`Job ${job.id} completed successfully.`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`Job ${job.id} failed with error: ${err.message}`);
+    logger.error(`Job ${job.id} failed: ${err.message}`);
 });
 
 export default worker;
