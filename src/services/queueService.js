@@ -2,7 +2,7 @@
 // Service for handling BullMQ queue operations
 
 import { Queue } from 'bullmq';
-import config from '@/config/config';
+import config from '../config/config';
 
 const logQueue = new Queue('log-processing-queue', {
     connection: { url: config.redisUrl },
