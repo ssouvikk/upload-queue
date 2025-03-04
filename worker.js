@@ -11,7 +11,7 @@ dotenv.config();
 
 // Initialize Supabase client using service key for secure server-side operations
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Retrieve keywords from environment variables (comma-separated list)

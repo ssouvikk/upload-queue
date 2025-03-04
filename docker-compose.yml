@@ -25,9 +25,6 @@ services:
       - REDIS_PORT=6379
     depends_on:
       - redis
-      - supabase-db
-      - supabase-gotrue
-      - supabase-realtime
     restart: always
     volumes:
       - ./:/app
@@ -43,10 +40,8 @@ services:
       - SUPABASE_KEY=${SUPABASE_KEY}
     depends_on:
       - redis
-      - supabase-db
     volumes:
       - ./:/worker
-
 
 volumes:
   redis-data:
