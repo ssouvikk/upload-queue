@@ -59,4 +59,6 @@ const Login = ({ onLogin }) => {
     );
 };
 
+Login.noLayout = true;
+
 export default Login;
