@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export default function Login() {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -41,3 +41,7 @@ export default function Login() {
         </div>
     );
 }
+
+
+Login.noLayout = true;
+export default Login;

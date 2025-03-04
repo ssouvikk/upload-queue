@@ -1,7 +1,7 @@
 // File: pages/upload.js
 import { useState } from 'react';
 
-export default function Upload() {
+const Upload = () => {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
 
@@ -37,3 +37,6 @@ export default function Upload() {
         </div>
     );
 }
+
+
+export default withAuth(Upload);

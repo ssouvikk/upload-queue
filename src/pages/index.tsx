@@ -1,3 +1,6 @@
+// src/pages/index.tsx
+import { withAuth } from '@/utils/auth'
+
 const HomePage = () => {
   return (
     <div>
@@ -6,4 +9,4 @@ const HomePage = () => {
   );
 }
 
-export default HomePage;
+export default withAuth(HomePage);
