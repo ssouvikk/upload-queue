@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
 
     // Function to handle registration form submission
     const handleRegister = async (e) => {
@@ -17,7 +16,6 @@ const Register = () => {
             toast.error(error.message);
             setMessage('');
         } else {
-            setMessage('Registration successful. Please check your email for confirmation.');
             toast.success('Registration successful');
         }
     };
@@ -25,7 +23,6 @@ const Register = () => {
     return (
         <div>
             <h1>Register</h1>
-            {message && <p style={{ color: 'green' }}>{message}</p>}
             <form onSubmit={handleRegister}>
                 <input
                     type="email"
