@@ -1,35 +1,30 @@
 // File: pages/register.js
 import { useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import exp from 'constants';
+import { toast } from 'react-toastify';
 
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const [message, setMessage] = useState(null);
+    const [message, setMessage] = useState('');
 
     // Function to handle registration form submission
     const handleRegister = async (e) => {
         e.preventDefault();
         // Call Supabase auth signUp method with email and password
-        const { user, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
-            setError(error.message);
-            setMessage(null);
+            toast.error(error.message);
+            setMessage('');
         } else {
-            // Successful registration; instruct user to check email for confirmation
             setMessage('Registration successful. Please check your email for confirmation.');
-            setError(null);
+            toast.success('Registration successful');
         }
     };
 
     return (
         <div>
             <h1>Register</h1>
-            {/* Display error message if any */}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {/* Display success message if registration is successful */}
             {message && <p style={{ color: 'green' }}>{message}</p>}
             <form onSubmit={handleRegister}>
                 <input
