@@ -21,6 +21,8 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
     depends_on:
       - redis
     restart: always
@@ -37,6 +39,7 @@ services:
       - REDIS_HOST=redis
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
+      - NODE_ENV=development
     depends_on:
       - redis
 

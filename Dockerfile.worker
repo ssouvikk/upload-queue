@@ -9,4 +9,8 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-CMD ["node", "workers/worker.js"]
+# Install nodemon globally for hot reload
+RUN npm install -g nodemon
+
+# Run worker with nodemon for hot reload
+CMD ["nodemon", "workers/worker.js"]
