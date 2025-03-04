@@ -17,7 +17,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=development           # Change to production for production build
       - CHOKIDAR_USEPOLLING=true
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=development           # Change to production for production build
       - REDIS_HOST=redis
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
