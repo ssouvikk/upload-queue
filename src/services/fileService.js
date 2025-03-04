@@ -1,16 +1,23 @@
-// File: services/fileService.js
-// Service for handling file-related operations (validation, storage)
+// File: src/services/fileService.js
+// Service for handling file-related operations using Supabase Storage
 
 const { createClient } = require('@supabase/supabase-js');
 const config = require('../config/config');
 
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
 
-exports.saveFile = async (file) => {
-    // Validate file (e.g., check type, size)
-    // Save file to Supabase Storage
-    // This is a placeholder for actual file upload logic
-    const { data, error } = await supabase.storage.from('log-files').upload(file.originalname, file.buffer);
-    if (error) throw error;
+export const saveFile = async (file) => {
+    // file: object containing file details (e.g., file.originalname, file.buffer, file.mimetype)
+    // Upload file to Supabase Storage bucket "log-files"
+    const { data, error } = await supabase.storage
+        .from('log-files')
+        .upload(file.originalname, file.buffer, {
+            contentType: file.mimetype,
+        });
+    if (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+    }
+    // Return file metadata (using data.Key as file identifier/path)
     return { id: data.Key, path: data.Key };
 };
