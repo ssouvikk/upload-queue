@@ -11,8 +11,12 @@ const HomePage = () => {
   // Example: Fetch stats on component mount
   useEffect(() => {
     fetch('/api/stats')
-      .then((res) => res.json())
-      .then((data) => setStats(data.stats))
+      .then(async (res) => {
+        if (res.ok) {
+          const { data } = await res.json()
+          setStats(data)
+        }
+      })
       .catch((err) => console.error('Error fetching stats:', err));
   }, []);
 
