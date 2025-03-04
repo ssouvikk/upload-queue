@@ -43,15 +43,15 @@ services:
     volumes:
       - ./:/worker
 
-  supabase:
-    image: supabase/supabase:latest
-    container_name: supabase
-    ports:
-      # Map the PostgreSQL port
-      - "54321:5432"
+  supabase-db:
+    image: supabase/postgres:15.8.1.047
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf  # Required for versions 14.1.0 and beyond
     environment:
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - supabase-data:/var/lib/postgresql/data
 
