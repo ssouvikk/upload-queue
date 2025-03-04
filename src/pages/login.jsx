@@ -4,7 +4,7 @@ import { supabase } from '@/utils/supabaseClient';
 import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
-import Loader from '@/components/Loader'; // import Loader if not already
+import Loader from '@/components/Loader';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,14 +12,14 @@ const Login = () => {
     const { authData, setAuthData } = useContext(AuthContext);
     const router = useRouter();
 
-    // Redirect if user is already logged in and show Loader until redirection
+    // Redirect immediately if user is already logged in
     useEffect(() => {
         if (authData && authData.user) {
             router.replace(router.query.redirect || '/');
         }
     }, [authData, router]);
 
-    // If user is logged in, show Loader to prevent flicker of login page
+    // If user is logged in, show Loader to prevent any flicker
     if (authData && authData.user) {
         return <Loader message="Redirecting..." spinnerSize={64} spinnerColor="border-blue-500" />;
     }
@@ -60,7 +60,7 @@ const Login = () => {
             </form>
         </div>
     );
-}
+};
 
 Login.noLayout = true;
 export default Login;

@@ -6,18 +6,18 @@ import Loader from '@/components/Loader';
 
 export function withAuth(Component) {
     return function AuthenticatedComponent(props) {
-        const { authData } = useContext(AuthContext);
+        const { authData, loading } = useContext(AuthContext);
         const router = useRouter();
 
         useEffect(() => {
-            // If authData is not loading and user is not logged in, redirect to login page
-            if (authData !== null && (!authData || !authData.user)) {
+            // After loading, if user is not authenticated, redirect to login page
+            if (!loading && (!authData || !authData.user)) {
                 router.replace(`/login?redirect=${router.pathname}`);
             }
-        }, [authData, router]);
+        }, [authData, loading, router]);
 
-        // If authData is null or user is not available, show Loader
-        if (!authData || !authData.user) {
+        // Show Loader until authentication status is confirmed
+        if (loading || !authData || !authData.user) {
             return <Loader message="Authenticating..." spinnerSize={64} spinnerColor="border-blue-500" />;
         }
 

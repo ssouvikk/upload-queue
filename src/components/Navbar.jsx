@@ -10,13 +10,7 @@ const Navbar = () => {
     const router = useRouter();
 
     const handleLogout = async () => {
-        // Call Supabase signOut method
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            toast.error('Logout failed');
-            return;
-        }
-        // Update AuthContext and remove session from localStorage
+        supabase.auth.signOut();
         setAuthData(null);
         localStorage.removeItem('supabaseSession');
         toast('Logged out successfully');

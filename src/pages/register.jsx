@@ -12,14 +12,14 @@ const Register = () => {
     const { authData } = useContext(AuthContext);
     const router = useRouter();
 
-    // Redirect if user is already logged in and show Loader until redirection
+    // Redirect immediately if user is already logged in
     useEffect(() => {
         if (authData && authData.user) {
             router.replace('/');
         }
     }, [authData, router]);
 
-    // If user is logged in, show Loader to prevent flicker of register page
+    // If user is logged in, show Loader to prevent any flicker
     if (authData && authData.user) {
         return <Loader message="Redirecting..." spinnerSize={64} spinnerColor="border-blue-500" />;
     }
@@ -56,7 +56,7 @@ const Register = () => {
             </form>
         </div>
     );
-}
+};
 
 Register.noLayout = true;
 export default Register;

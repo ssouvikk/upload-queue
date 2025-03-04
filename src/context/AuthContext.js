@@ -10,12 +10,20 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Function to get initial session from Supabase
+        // Check localStorage for persisted session immediately
+        const storedSession = localStorage.getItem('supabaseSession');
+        if (storedSession) {
+            setAuthData(JSON.parse(storedSession));
+            setLoading(false);
+        } else {
+            setLoading(false);
+        }
+
+        // Get latest session from Supabase in background
         const getInitialSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             setAuthData(session);
-            setLoading(false);
-            // Persist session in localStorage
+            // Persist session if available
             if (session) {
                 localStorage.setItem('supabaseSession', JSON.stringify(session));
             } else {
@@ -40,10 +48,13 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-    if (loading) return <Loader message="Loading..." spinnerSize={64} spinnerColor="border-blue-500" />;
+    if (loading) {
+        // Show loader until loading is complete
+        return <Loader message="Loading..." spinnerSize={64} spinnerColor="border-blue-500" />;
+    }
 
     return (
-        <AuthContext.Provider value={{ authData, setAuthData }}>
+        <AuthContext.Provider value={{ authData, setAuthData, loading }}>
             {children}
         </AuthContext.Provider>
     );
