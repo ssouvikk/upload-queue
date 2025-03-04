@@ -5,7 +5,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"
+      - "6380:6379"   # Host port changed to 6380
     volumes:
       - redis-data:/data
 
@@ -55,12 +55,13 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5435:5432"
+      - "5435:5432"   # Changed host port to avoid conflicts
     volumes:
       - supabase-data:/var/lib/postgresql/data
+      - ./init_supabase_admin.sql:/docker-entrypoint-initdb.d/init_supabase_admin.sql
 
   supabase-gotrue:
-    image: supabase/gotrue:v2.0.2   # Use a specific version instead of 'latest'
+    image: supabase/gotrue:v2.0.2
     environment:
       # Configure GoTrue to connect to the Postgres database
       GOTRUE_DB_DRIVER: postgres
@@ -73,12 +74,13 @@ services:
       - supabase-db
 
   supabase-realtime:
-    image: supabase/realtime:v2.4.0   # Use a specific version instead of 'latest'
+    image: supabase/realtime:v2.4.0   
     environment:
       DB_HOST: supabase-db
       DB_PORT: "5432"
       DB_USER: postgres
       DB_PASSWORD: postgres
+      REALTIME_NODE_NAME: realtime@localhost   # Set a valid node name
     ports:
       - "4000:4000"
     depends_on:

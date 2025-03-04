@@ -14,4 +14,4 @@ COPY . .
 RUN npm install -g nodemon
 
 # Run worker with nodemon for hot reload
-CMD ["nodemon", "workers/worker.js"]
+CMD ["nodemon", "worker.js"]
