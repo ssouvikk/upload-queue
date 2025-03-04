@@ -17,31 +17,31 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - CHOKIDAR_USEPOLLING=true
-      - NODE_ENV=development
     depends_on:
       - redis
     restart: always
     volumes:
-      # - ./.env:/app/.env
       - ./:/app
-
   
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
     environment:
+      - NODE_ENV=development
       - REDIS_HOST=redis
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - NODE_ENV=development
     depends_on:
       - redis
+    volumes:
+      - ./:/worker
 
   supabase:
     image: supabase/supabase:latest
@@ -50,7 +50,6 @@ services:
       # Map the PostgreSQL port
       - "54321:5432"
     environment:
-      # Environment variables for Supabase
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
     volumes:
