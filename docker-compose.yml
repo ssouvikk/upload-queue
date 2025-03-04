@@ -1,40 +1,50 @@
+# docker-compose.yml
 version: '3.8'
 
 services:
-  # Next.js Application Container (includes both backend and frontend)
-  web:
-    build: .
-    container_name: nextjs_app
-    ports:
-      - "3000:3000"
-    environment:
-      # Environment variables for Supabase (replace with your actual values or use a .env file)
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-      # Environment variables for Redis (BullMQ will connect to Redis container)
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - redis
-    volumes:
-      # - ./.env:/app/.env
-      - ./:/app
-
-  # Redis Container for BullMQ queue management
   redis:
     image: redis:7-alpine
-    container_name: redis
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
-    # Redis is used as the backend for BullMQ job queue
+
+  # Next.js Application Container (includes both backend and frontend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+    volumes:
+      # - ./.env:/app/.env
+      - ./:/app
+
+  
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - REDIS_HOST=redis
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    depends_on:
+      - redis
 
   supabase:
     image: supabase/supabase:latest
     container_name: supabase
     ports:
-      # Map the PostgreSQL port (or as required by your Supabase setup)
+      # Map the PostgreSQL port
       - "54321:5432"
     environment:
       # Environment variables for Supabase

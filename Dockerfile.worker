@@ -1,0 +1,12 @@
+# Dockerfile.worker
+
+FROM node:20.11.1
+WORKDIR /worker
+
+
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+COPY . .
+
+CMD ["node", "workers/worker.js"]
