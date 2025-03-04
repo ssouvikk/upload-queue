@@ -1,6 +1,6 @@
 // File: pages/login.js
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/utils/supabaseClient';
 
 const Login = () => {
     const [email, setEmail] = useState('');

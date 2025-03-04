@@ -1,4 +1,4 @@
-// utils/withAuth.js
+// File: utils/withAuth.js
 import { useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AuthContext from '../context/AuthContext';
@@ -10,14 +10,14 @@ export function withAuth(Component) {
         const router = useRouter();
 
         useEffect(() => {
-            if (authData === undefined) return;
-            if (!authData?.user) {
+            // If no user in session, redirect to login page
+            if (authData && !authData.user) {
                 router.replace(`/login?redirect=${router.pathname}`);
             }
         }, [authData, router]);
 
-        if (authData === undefined || !authData?.user) {
-            return <Loader />;
+        if (!authData || !authData.user) {
+            return <Loader message="Authenticating..." spinnerSize={64} spinnerColor="border-blue-500" />;
         }
 
         return <Component {...props} />;

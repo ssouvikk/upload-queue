@@ -1,16 +1,14 @@
-// pages/_app.js
+// File: pages/_app.js
 import '../styles/globals.css';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from '../context/AuthContext';
 import Layout from '@/components/Layout';
-import { initializeTokens } from '@/utils/tokenManager';
 import { useEffect, useState } from 'react';
 import Loader from '@/components/Loader';
 import Router from 'next/router';
 
-initializeTokens();
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
 
 function MyApp({ Component, pageProps }) {

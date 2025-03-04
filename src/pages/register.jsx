@@ -1,6 +1,6 @@
 // File: pages/register.js
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/utils/supabaseClient';
 import exp from 'constants';
 
 const Register = () => {
