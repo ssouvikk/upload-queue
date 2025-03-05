@@ -9,6 +9,11 @@ const Sidebar = () => {
             <ListGroup variant="flush">
                 <ListGroup.Item>
                     <Link href="/" passHref legacyBehavior>
+                        <a className="text-decoration-none text-dark">Home</a>
+                    </Link>
+                </ListGroup.Item>
+                <ListGroup.Item>
+                    <Link href="/dashboard" passHref legacyBehavior>
                         <a className="text-decoration-none text-dark">Dashboard</a>
                     </Link>
                 </ListGroup.Item>
