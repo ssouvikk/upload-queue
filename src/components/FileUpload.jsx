@@ -1,7 +1,8 @@
 // File: components/FileUpload.js
-
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { Form, } from 'react-bootstrap';
+import { CustomButton, } from '@/components/ui';
 
 const FileUpload = ({ onUploadSuccess }) => {
     const [file, setFile] = useState(null);
@@ -39,19 +40,13 @@ const FileUpload = ({ onUploadSuccess }) => {
     };
 
     return (
-        <div className="mb-6">
-            <input
-                type="file"
-                onChange={handleFileChange}
-                className="border p-2 rounded mb-2"
-            />
-            <button
-                onClick={handleUpload}
-                disabled={uploading}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-                {uploading ? 'Uploading...' : 'Upload Log File'}
-            </button>
+        <div className="mb-3">
+            <Form.Group controlId="fileUpload">
+                <Form.Control type="file" onChange={handleFileChange} />
+            </Form.Group>
+            <CustomButton onClick={handleUpload} loading={uploading}>
+                Upload Log File
+            </CustomButton>
         </div>
     );
 };

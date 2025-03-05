@@ -1,19 +1,21 @@
-// components/Sidebar.js
-import Link from 'next/link'
+// File: components/Sidebar.js
+import Link from 'next/link';
+import { ListGroup } from 'react-bootstrap';
 
+// This Sidebar component uses react-bootstrap ListGroup to display navigation links.
 const Sidebar = () => {
     return (
-        <aside className="w-64 bg-gray-100 p-4 hidden md:block" style={{ backgroundColor: '#8ba1e2' }}>
-            <ul>
-                <li className="mb-2">
-                    <Link href="/" className="text-gray-700 hover:text-blue-500">
-                        Dashboard
+        <div style={{ backgroundColor: '#8ba1e2', minHeight: '100vh' }}>
+            <ListGroup variant="flush">
+                <ListGroup.Item>
+                    <Link href="/" passHref legacyBehavior>
+                        <a className="text-decoration-none text-dark">Dashboard</a>
                     </Link>
-                </li>
-                {/* Add other links */}
-            </ul>
-        </aside>
-    )
-}
+                </ListGroup.Item>
+                {/* Add other links as needed */}
+            </ListGroup>
+        </div>
+    );
+};
 
-export default Sidebar
+export default Sidebar;

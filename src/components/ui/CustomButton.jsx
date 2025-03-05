@@ -16,7 +16,7 @@ const CustomButton = ({ children, variant = "primary", className = "", loading =
             aria-hidden="true"
             className="me-2"
           />
-          Loading...
+          Processing...
         </>
       ) : (
         children

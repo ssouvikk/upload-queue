@@ -1,7 +1,8 @@
 // File: components/ErrorBoundary.js
-
 import React from 'react';
+import { Alert } from 'react-bootstrap';
 
+// This component catches errors and displays a fallback UI using react-bootstrap Alert.
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
@@ -9,23 +10,22 @@ class ErrorBoundary extends React.Component {
     }
 
     static getDerivedStateFromError(error) {
-        // Update state so next render shows fallback UI
+        // Update state so next render shows fallback UI.
         return { hasError: true, error };
     }
 
     componentDidCatch(error, errorInfo) {
-        // Log error information
+        // Log error information.
         console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
     render() {
         if (this.state.hasError) {
-            // Render fallback UI
             return (
-                <div className="p-4 bg-red-100 text-red-700">
-                    <h1>Something went wrong.</h1>
+                <Alert variant="danger" className="m-3">
+                    <Alert.Heading>Something went wrong.</Alert.Heading>
                     <p>{this.state.error && this.state.error.toString()}</p>
-                </div>
+                </Alert>
             );
         }
         return this.props.children;

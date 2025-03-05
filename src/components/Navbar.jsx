@@ -4,8 +4,10 @@ import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 import { supabase } from '@/utils/supabaseClient';
+import { Navbar, Nav, Container, } from 'react-bootstrap';
+import { CustomButton, } from '@/components/ui';
 
-const Navbar = () => {
+const AppNavbar = () => {
     const { setAuthData } = useContext(AuthContext);
     const router = useRouter();
 
@@ -18,24 +20,20 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-gray-800 text-white p-4 flex flex-col sm:flex-row justify-between items-center">
-            <div className="text-lg font-bold">Task Manager</div>
-            <div className="flex items-center space-x-4 mt-2 sm:mt-0">
-                <button
-                    onClick={() => router.push('/notifications')}
-                    className="text-white hover:underline focus:outline-none"
-                >
-                    Notifications
-                </button>
-                <button
-                    onClick={handleLogout}
-                    className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded focus:outline-none"
-                >
-                    Logout
-                </button>
-            </div>
-        </nav>
+        <Navbar bg="dark" variant="dark" expand="sm" className="mb-3">
+            <Container fluid>
+                <Navbar.Brand> File Manager </Navbar.Brand>
+                <Navbar.Toggle aria-controls="navbar-nav" />
+                <Navbar.Collapse id="navbar-nav">
+                    <Nav className="ms-auto">
+                        <CustomButton variant="danger" onClick={handleLogout} className="ms-2">
+                            Logout
+                        </CustomButton>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
 };
 
-export default Navbar;
+export default AppNavbar;

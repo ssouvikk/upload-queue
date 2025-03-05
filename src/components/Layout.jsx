@@ -1,21 +1,24 @@
-// components/Layout.js
-import Navbar from './Navbar'
-// import NotificationFeed from './NotificationFeed'
-import Sidebar from './Sidebar'
+// File: components/Layout.js
+import Navbar from './Navbar'; // Updated Navbar component using react-bootstrap.
+import Sidebar from './Sidebar';
+import { Container, Row, Col } from 'react-bootstrap';
 
 const Layout = ({ children }) => {
     return (
-        <div className="min-h-screen flex flex-col bg-white">
+        <div className="min-vh-100 d-flex flex-column bg-white">
             <Navbar />
-            <div className="flex flex-1">
-                <Sidebar />
-                <main className="flex-1 p-6 bg-gray-50 text-gray-800" style={{ backgroundColor: '#b2cdee' }}>
-                    {children}
-                </main>
-            </div>
-            {/* <NotificationFeed /> */}
+            <Container fluid>
+                <Row className="flex-grow-1">
+                    <Col md={3} className="d-none d-md-block p-0">
+                        <Sidebar />
+                    </Col>
+                    <Col md={9} className="p-3" style={{ backgroundColor: '#b2cdee', minHeight: '100vh' }}>
+                        {children}
+                    </Col>
+                </Row>
+            </Container>
         </div>
-    )
-}
+    );
+};
 
-export default Layout
+export default Layout;
