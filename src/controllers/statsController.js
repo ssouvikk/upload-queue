@@ -2,24 +2,23 @@
 // Controller for handling statistics fetching
 
 const dbService = require('../services/dbService');
+const { successResponse } = require('../utils/responseHelper');
 
-exports.getStats = async (req, res) => {
+exports.getStats = async (req, res, next) => {
     try {
         const stats = await dbService.fetchAggregatedStats();
-        res.status(200).json({ stats });
+        return successResponse(res, stats);
     } catch (error) {
-        console.error('Error in getStats:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        next(error);
     }
 };
 
-exports.getJobStats = async (req, res) => {
+exports.getJobStats = async (req, res, next) => {
     try {
-        const { jobId } = req.query; // or req.params if using dynamic routing
+        const { jobId } = req.query;
         const jobStats = await dbService.fetchJobStats(jobId);
-        res.status(200).json({ jobStats });
+        return successResponse(res, jobStats);
     } catch (error) {
-        console.error('Error in getJobStats:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        next(error);
     }
 };

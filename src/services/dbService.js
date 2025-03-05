@@ -7,7 +7,6 @@ const logger = require('../config/logger');
 
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
 
-
 module.exports = {
     saveLogStats: async (logData) => {
         try {
@@ -50,6 +49,4 @@ module.exports = {
             throw error;
         }
     },
-}
-
-
+};

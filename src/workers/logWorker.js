@@ -122,4 +122,6 @@ worker.on('failed', (job, err) => {
     logger.error(`Job ${job.id} failed: ${err.message}`);
 });
 
+console.log('Log worker started.');
+
 module.exports = worker;

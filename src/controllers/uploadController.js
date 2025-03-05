@@ -1,14 +1,16 @@
 // File: controllers/uploadController.js
+// Controller for handling file uploads
 
 const fileService = require('../services/fileService');
 const queueService = require('../services/queueService');
+const { successResponse } = require('../utils/responseHelper');
+const AppError = require('../utils/AppError');
 
-exports.uploadLogFile = async (req, res) => {
+exports.uploadLogFile = async (req, res, next) => {
     try {
-        // Validate and process file upload
         const { file } = req; // Assuming file is available via middleware (like multer)
         if (!file) {
-            return res.status(400).json({ message: 'No file uploaded.' });
+            throw new AppError('No file uploaded.', 400);
         }
 
         // Save file to Supabase Storage using fileService
@@ -20,9 +22,8 @@ exports.uploadLogFile = async (req, res) => {
             filePath: fileData.path,
         });
 
-        res.status(200).json({ message: 'File uploaded successfully.', jobId: job.id });
+        return successResponse(res, { jobId: job.id }, 'File uploaded successfully.');
     } catch (error) {
-        console.error('Error in uploadLogFile:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        next(error);
     }
 };
