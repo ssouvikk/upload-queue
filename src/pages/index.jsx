@@ -12,9 +12,11 @@ const HomePage = () => {
   useEffect(() => {
     fetch('/api/stats')
       .then(async (res) => {
-        if (res.ok) {
-          const { data } = await res.json()
+        const { data, success } = await res.json()
+        if (success) {
           setStats(data)
+        } else {
+          console.error('Error fetching stats:', data)
         }
       })
       .catch((err) => console.error('Error fetching stats:', err));

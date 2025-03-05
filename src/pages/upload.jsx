@@ -20,8 +20,8 @@ const Upload = () => {
             method: 'POST',
             body: formData,
         });
-        const data = await res.json();
-        if (res.ok) {
+        const { data, success } = await res.json();
+        if (success) {
             setUploadStatus('Upload successful. Job ID: ' + data.jobId);
         } else {
             setUploadStatus('Upload failed: ' + data.error);
