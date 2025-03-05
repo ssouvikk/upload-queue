@@ -1,7 +1,7 @@
-# Dockerfile.worker
+# File: Dockerfile.worker
 FROM node:20.11.1
 
-WORKDIR /worker
+WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
@@ -13,5 +13,5 @@ COPY . .
 # Install nodemon globally for hot reload
 RUN npm install -g nodemon
 
-# Run worker with nodemon for hot reload
-CMD ["nodemon", "worker.js"]
+# Run worker using npm script (which runs nodemon on src/workers/logWorker.js)
+CMD ["npm", "run", "worker"]

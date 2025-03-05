@@ -23,6 +23,7 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     depends_on:
       - redis
     restart: always
@@ -36,12 +37,14 @@ services:
     environment:
       - NODE_ENV=development           # Change to production for production build
       - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
+    command: ["npm", "run", "worker"]
     depends_on:
       - redis
     volumes:
-      - ./:/worker
+      - ./:/app
 
 volumes:
   redis-data:
