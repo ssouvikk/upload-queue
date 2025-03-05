@@ -20,7 +20,7 @@ const AppNavbar = () => {
     };
 
     return (
-        <Navbar bg="dark" variant="dark" expand="sm" className="mb-3">
+        <Navbar bg="dark" variant="dark" expand="sm">
             <Container fluid>
                 <Navbar.Brand>File Manager</Navbar.Brand>
                 <Navbar.Toggle aria-controls="navbar-nav" />
