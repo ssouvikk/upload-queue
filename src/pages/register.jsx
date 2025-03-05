@@ -1,10 +1,12 @@
-// File: pages/register.js
+// File: src/pages/register.js
 import { useState, useEffect, useContext } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
-import AuthContext from '../context/AuthContext';
+import AuthContext from '@/context/AuthContext';
 import { useRouter } from 'next/router';
 import Loader from '@/components/Loader';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -27,7 +29,6 @@ const Register = () => {
     // Function to handle registration form submission
     const handleRegister = async (e) => {
         e.preventDefault();
-        // Call Supabase auth signUp method with email and password
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
             toast.error(error.message);
@@ -37,23 +38,27 @@ const Register = () => {
     };
 
     return (
-        <div>
-            <h1>Register</h1>
-            <form onSubmit={handleRegister}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Register</button>
-            </form>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+                <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
+                <form onSubmit={handleRegister} className="space-y-4">
+                    <Input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <Button type="submit" variant="primary" className="w-full">
+                        Register
+                    </Button>
+                </form>
+            </div>
         </div>
     );
 };
