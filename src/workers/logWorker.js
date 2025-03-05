@@ -1,5 +1,9 @@
 // File: src/workers/logWorker.js
-// Worker for processing log files using BullMQ with centralized error handling and logging
+// Worker for processing log files using BullMQ with additional logic:
+// - Counting error logs
+// - Matching keywords in log messages
+// - Extracting IP addresses from log messages
+// Centralized error handling and logging are implemented using config and logger
 
 import { Worker } from 'bullmq';
 import fs from 'fs';
@@ -8,58 +12,100 @@ import config from '@/config/config';
 import { saveLogStats } from '@/services/dbService';
 import logger from '@/config/logger';
 
+// Retrieve keywords from environment variables (comma-separated list)
+const keywords = process.env.LOG_KEYWORDS
+    ? process.env.LOG_KEYWORDS.split(',').map(keyword => keyword.trim())
+    : [];
+
+// Regular expression to parse a log line
+// Expected format: [TIMESTAMP] LEVEL MESSAGE {optional JSON payload}
+const logLineRegex = /^\[(.+?)\]\s+(\w+)\s+(.*?)(\s+\{.*\})?$/;
+
 const worker = new Worker(
     'log-processing-queue',
     async job => {
         const { fileId, filePath } = job.data;
-        try {
-            // Create a read stream for the file located at filePath
-            const fileStream = fs.createReadStream(filePath);
-            // Use readline to process the file line by line
-            const rl = readline.createInterface({
-                input: fileStream,
-                crlfDelay: Infinity,
-            });
+        logger.info(`Processing file: ${filePath}`);
 
-            // Placeholder for processed results
-            const processedData = [];
+        // Initialize counters and storage for additional log information
+        let errorCount = 0;
+        let keywordMatches = {};
+        let ipAddresses = new Set();
 
-            // Process each line and parse log entries
-            for await (const line of rl) {
-                // Example log format: "[2025-02-20T10:00:00Z] ERROR Database timeout {\"userId\": 123, \"ip\": \"192.168.1.1\"}"
-                // Regular expression to parse the log entry
-                const regex = /^\[(.*?)\]\s+(\w+)\s+(.*?)(\s+\{.*\})?$/;
-                const match = line.match(regex);
-                if (match) {
-                    const [, timestamp, level, message, jsonPayload] = match;
-                    let additionalData = {};
-                    if (jsonPayload) {
-                        try {
-                            additionalData = JSON.parse(jsonPayload.trim());
-                        } catch (e) {
-                            // If JSON parsing fails, log error and continue processing next line
-                            logger.error('Error parsing JSON payload: ' + e.message);
-                        }
-                    }
-                    processedData.push({
-                        fileId,
-                        timestamp,
-                        level,
-                        message,
-                        ...additionalData,
-                    });
+        // Initialize keyword match counts to zero
+        keywords.forEach(keyword => {
+            keywordMatches[keyword] = 0;
+        });
+
+        // Create a readable stream for the log file with UTF-8 encoding
+        const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+        const rl = readline.createInterface({
+            input: fileStream,
+            crlfDelay: Infinity, // Recognize all instances of CR LF as a single newline
+        });
+
+        // Process the file line by line
+        for await (const line of rl) {
+            try {
+                // Skip empty lines
+                if (!line.trim()) continue;
+
+                // Use regex to parse the log line
+                const match = line.match(logLineRegex);
+                if (!match) {
+                    logger.warn(`Invalid log format: ${line}`);
+                    continue;
                 }
-            }
 
-            // Save the processed log stats to Supabase via dbService
-            await saveLogStats(processedData);
-            // Return result on successful processing
-            return { success: true, processedCount: processedData.length };
-        } catch (error) {
-            logger.error(`Error processing file ${filePath}: ${error.message}`);
-            // Throw error to let BullMQ handle retry based on configuration
+                // Destructure the parsed components
+                const [, timestamp, level, message, jsonPayload] = match;
+
+                // Increment error counter if log level is "ERROR"
+                if (level.toUpperCase() === 'ERROR') {
+                    errorCount++;
+                }
+
+                // Check and count keyword occurrences in the message
+                keywords.forEach(keyword => {
+                    if (message.includes(keyword)) {
+                        keywordMatches[keyword]++;
+                    }
+                });
+
+                // Extract IPv4 address from the message, if present
+                const ipRegex = /(\d{1,3}\.){3}\d{1,3}/;
+                const ipMatch = message.match(ipRegex);
+                if (ipMatch) {
+                    ipAddresses.add(ipMatch[0]);
+                }
+            } catch (lineError) {
+                // Log error for the specific line but continue processing subsequent lines
+                logger.error(`Error processing line: ${lineError.message}`);
+            }
+        }
+
+        // Convert the Set of IP addresses into an array for storage
+        const ipList = Array.from(ipAddresses);
+
+        // Prepare the aggregated results object
+        const logStats = {
+            file_id: fileId,
+            processed_at: new Date().toISOString(),
+            error_count: errorCount,
+            keyword_matches: JSON.stringify(keywordMatches),
+            ip_addresses: JSON.stringify(ipList),
+        };
+
+        // Insert the aggregated log statistics into the Supabase log_stats table via dbService
+        const { error } = await saveLogStats(logStats);
+        if (error) {
+            logger.error(`Error inserting log stats into Supabase: ${error.message}`);
+            // Throw error to let BullMQ handle retries based on configuration
             throw error;
         }
+
+        logger.info(`Finished processing file ${fileId}. Results: ${JSON.stringify(logStats)}`);
+        return { success: true, processedCount: errorCount };
     },
     {
         connection: { url: config.redisUrl },
@@ -67,7 +113,7 @@ const worker = new Worker(
     }
 );
 
-// Listen to worker events for logging and debugging
+// Global event listeners for the worker
 worker.on('completed', job => {
     logger.info(`Job ${job.id} completed successfully.`);
 });
