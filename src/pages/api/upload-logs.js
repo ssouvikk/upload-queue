@@ -24,10 +24,10 @@ const apiRoute = nextConnect({
 
 apiRoute.use(upload.single('file'));
 
-apiRoute.post(async (req, res) => {
+apiRoute.post(async (req, res, next) => {
     // Attach logger instance to req object
     req.logger = logger;
-    await uploadLogFile(req, res);
+    await uploadLogFile(req, res, next);
 });
 
 export default apiRoute;

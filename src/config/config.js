@@ -1,8 +1,10 @@
-// File: config/config.js
+// File: src/config/config.js
+// Configuration file for environment variables
 
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-module.exports = {
+export default {
     redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

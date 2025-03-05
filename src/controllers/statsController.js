@@ -1,10 +1,10 @@
-// File: controllers/statsController.js
+// File: src/controllers/statsController.js
 // Controller for handling statistics fetching
 
-const dbService = require('../services/dbService');
-const { successResponse } = require('../utils/responseHelper');
+import * as dbService from '../services/dbService.js';
+import { successResponse } from '../utils/responseHelper.js';
 
-exports.getStats = async (req, res, next) => {
+export const getStats = async (req, res, next) => {
     try {
         const stats = await dbService.fetchAggregatedStats();
         return successResponse(res, stats);
@@ -13,7 +13,7 @@ exports.getStats = async (req, res, next) => {
     }
 };
 
-exports.getJobStats = async (req, res, next) => {
+export const getJobStats = async (req, res, next) => {
     try {
         const { jobId } = req.query;
         const jobStats = await dbService.fetchJobStats(jobId);

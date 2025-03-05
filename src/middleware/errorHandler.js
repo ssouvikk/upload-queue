@@ -3,7 +3,7 @@
 
 const { errorResponse } = require('../utils/responseHelper');
 
-module.exports = function errorHandler(err, req, res, next) {
+export default function errorHandler(err, req, res, next) {
     // Log the error using your logger (assuming req.logger is set, or use a global logger)
     if (req.logger) {
         req.logger.error(err.stack || err);
@@ -13,4 +13,4 @@ module.exports = function errorHandler(err, req, res, next) {
         success: false,
         error: err.message || 'Internal Server Error',
     });
-};
+}

@@ -1,8 +1,8 @@
 // File: src/services/fileService.js
 // Service for handling file-related operations using Supabase Storage
 
-const { createClient } = require('@supabase/supabase-js');
-const config = require('../config/config');
+import { createClient } from '@supabase/supabase-js';
+import config from '../config/config.js';
 
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
 

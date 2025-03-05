@@ -5,12 +5,13 @@
 // - Extracting IP addresses from log messages
 // Centralized error handling and logging are implemented using config and logger
 
-const { Worker } = require('bullmq'); // Using require instead of import
-const fs = require('fs');
-const readline = require('readline');
-const config = require('../config/config');
-const { saveLogStats } = require('../services/dbService');
-const logger = require('../config/logger');
+
+import { Worker } from 'bullmq';
+import fs from 'fs';
+import readline from 'readline';
+import config from '../config/config.js';  // Changed from '@/config/config' to relative path
+import { saveLogStats } from '../services/dbService.js';  // Changed from '@/services/dbService' to relative path
+import logger from '../config/logger.js';  // Changed from '@/config/logger' to relative path
 
 // Retrieve keywords from environment variables (comma-separated list)
 const keywords = process.env.LOG_KEYWORDS
@@ -23,7 +24,7 @@ const logLineRegex = /^\[(.+?)\]\s+(\w+)\s+(.*?)(\s+\{.*\})?$/;
 
 const worker = new Worker(
     'log-processing-queue',
-    async job => {
+    async (job) => {
         const { fileId, filePath } = job.data;
         logger.info(`Processing file: ${filePath}`);
 
@@ -33,7 +34,7 @@ const worker = new Worker(
         let ipAddresses = new Set();
 
         // Initialize keyword match counts to zero
-        keywords.forEach(keyword => {
+        keywords.forEach((keyword) => {
             keywordMatches[keyword] = 0;
         });
 
@@ -66,7 +67,7 @@ const worker = new Worker(
                 }
 
                 // Check and count keyword occurrences in the message
-                keywords.forEach(keyword => {
+                keywords.forEach((keyword) => {
                     if (message.includes(keyword)) {
                         keywordMatches[keyword]++;
                     }
@@ -114,7 +115,7 @@ const worker = new Worker(
 );
 
 // Global event listeners for the worker
-worker.on('completed', job => {
+worker.on('completed', (job) => {
     logger.info(`Job ${job.id} completed successfully.`);
 });
 
@@ -124,4 +125,4 @@ worker.on('failed', (job, err) => {
 
 console.log('Log worker started.');
 
-module.exports = worker;
+export default worker;
