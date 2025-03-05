@@ -5,12 +5,12 @@
 // - Extracting IP addresses from log messages
 // Centralized error handling and logging are implemented using config and logger
 
-import { Worker } from 'bullmq';
-import fs from 'fs';
-import readline from 'readline';
-import config from '@/config/config';
-import { saveLogStats } from '@/services/dbService';
-import logger from '@/config/logger';
+const { Worker } = require('bullmq'); // Using require instead of import
+const fs = require('fs');
+const readline = require('readline');
+const config = require('../config/config');
+const { saveLogStats } = require('../services/dbService');
+const logger = require('../config/logger');
 
 // Retrieve keywords from environment variables (comma-separated list)
 const keywords = process.env.LOG_KEYWORDS
@@ -122,4 +122,4 @@ worker.on('failed', (job, err) => {
     logger.error(`Job ${job.id} failed: ${err.message}`);
 });
 
-export default worker;
+module.exports = worker;

@@ -1,7 +1,7 @@
 // File: src/config/logger.js
 // Winston logger configuration
 
-import { createLogger, format, transports } from 'winston';
+const { createLogger, format, transports } = require('winston')
 
 const logger = createLogger({
     level: 'info',
@@ -16,4 +16,4 @@ const logger = createLogger({
     ],
 });
 
-export default logger;
+module.exports = logger;
