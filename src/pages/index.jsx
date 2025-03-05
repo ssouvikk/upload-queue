@@ -1,46 +1,22 @@
 // File: pages/index.js
-import { useState, useEffect } from 'react';
+// Dashboard page with real-time updates via WebSocket, state management, and error boundary
+
+import React, { useState, useEffect, useContext } from 'react';
 import FileUpload from '@/components/FileUpload';
 import DashboardTable from '@/components/DashboardTable';
 import { withAuth } from '@/utils/withAuth';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { LiveStatsProvider } from '@/context/LiveStatsContext';
 
 const HomePage = () => {
   const [stats, setStats] = useState([]);
-  const [socketData, setSocketData] = useState(null);
 
-  // WebSocket integration for live updates
-  useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000/api/live-stats');
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setSocketData(data);
-      } catch (e) {
-        console.error('Error parsing WebSocket data:', e);
-      }
-    };
-    socket.onerror = (err) => {
-      console.error('WebSocket error:', err);
-    };
-    return () => {
-      socket.close();
-    };
-  }, []);
+  // LiveStatsProvider updates stats via context (if needed, you can use useContext here)
+  // For demonstration, you might merge WebSocket data with API fetched stats
 
-  // Function to handle successful file upload
   const handleUploadSuccess = (data) => {
-    // Optionally, you can update stats or trigger a refetch here
-    console.log('Upload success:', data);
+    console.log('File uploaded successfully:', data);
   };
-
-  // For demonstration, merge WebSocket data with current stats
-  // In a real app, you might want to merge or refetch data from an API
-  useEffect(() => {
-    if (socketData) {
-      setStats((prevStats) => [socketData, ...prevStats]);
-    }
-  }, [socketData]);
 
   return (
     <ErrorBoundary>
@@ -53,4 +29,8 @@ const HomePage = () => {
   );
 };
 
-export default withAuth(HomePage);
+export default withAuth((props) => (
+  <LiveStatsProvider>
+    <HomePage {...props} />
+  </LiveStatsProvider>
+));
