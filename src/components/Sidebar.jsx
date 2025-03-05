@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { ListGroup } from 'react-bootstrap';
 
-// This Sidebar component uses react-bootstrap ListGroup to display navigation links.
 const Sidebar = () => {
     return (
         <div style={{ backgroundColor: '#8ba1e2', minHeight: '100vh' }}>

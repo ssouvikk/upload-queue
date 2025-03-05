@@ -1,5 +1,4 @@
 // File: pages/_app.js
-// import '../styles/globals.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastContainer } from 'react-toastify';
@@ -14,10 +13,11 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
+// This is the main App component with global providers and a route change loader.
 function MyApp({ Component, pageProps }) {
   const [loading, setLoading] = useState(false);
 
-  // Global loader for route changes
+  // Global loader for route changes.
   useEffect(() => {
     const handleStart = () => setLoading(true);
     const handleComplete = () => setLoading(false);
@@ -33,15 +33,13 @@ function MyApp({ Component, pageProps }) {
     };
   }, []);
 
-  const getLayout = Component.noLayout
-    ? (page) => page
-    : (page) => <Layout>{page}</Layout>;
+  const getLayout = Component.noLayout ? (page) => page : (page) => <Layout>{page}</Layout>;
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         {loading && (
-          <Loader message="Loading..." spinnerSize={64} spinnerColor="border-blue-500" />
+          <Loader message="Loading..." spinnerSize={64} spinnerVariant="primary" />
         )}
         {getLayout(<Component {...pageProps} />)}
         <ToastContainer position="top-right" autoClose={5000} />

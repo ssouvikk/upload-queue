@@ -1,14 +1,14 @@
 // File: components/Layout.js
-import Navbar from './Navbar'; // Updated Navbar component using react-bootstrap.
+import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { Container, Row, Col } from 'react-bootstrap';
 
 const Layout = ({ children }) => {
     return (
-        <div className="min-vh-100 d-flex flex-column bg-white">
+        <div className="d-flex flex-column min-vh-100">
             <Navbar />
-            <Container fluid>
-                <Row className="flex-grow-1">
+            <Container fluid className="flex-grow-1">
+                <Row>
                     <Col md={3} className="d-none d-md-block p-0">
                         <Sidebar />
                     </Col>

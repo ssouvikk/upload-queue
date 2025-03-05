@@ -1,13 +1,13 @@
 // File: pages/index.js
-// Dashboard page with real-time updates via WebSocket, state management, and error boundary
-
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
+import { Container, Row, Col, Card } from 'react-bootstrap';
 import FileUpload from '@/components/FileUpload';
 import DashboardTable from '@/components/DashboardTable';
 import { withAuth } from '@/utils/withAuth';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { LiveStatsProvider } from '@/context/LiveStatsContext';
 
+// This Dashboard page uses react-bootstrap for a modern layout.
 const HomePage = () => {
   const [stats, setStats] = useState([]);
 
@@ -16,15 +16,32 @@ const HomePage = () => {
 
   const handleUploadSuccess = (data) => {
     console.log('File uploaded successfully:', data);
+    // You can update stats here as required.
   };
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-        <FileUpload onUploadSuccess={handleUploadSuccess} />
-        <DashboardTable stats={stats} />
-      </div>
+      <Container fluid className="py-4">
+        <Row className="mb-4">
+          <Col>
+            <h1 className="text-center">Dashboard</h1>
+          </Col>
+        </Row>
+        <Row className="mb-4 justify-content-center">
+          <Col md={8} lg={6}>
+            <Card>
+              <Card.Body>
+                <FileUpload onUploadSuccess={handleUploadSuccess} />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <DashboardTable stats={stats} />
+          </Col>
+        </Row>
+      </Container>
     </ErrorBoundary>
   );
 };
