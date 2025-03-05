@@ -1,4 +1,5 @@
 // File: context/AuthContext.js
+
 import { createContext, useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import Loader from '@/components/Loader';
@@ -9,21 +10,23 @@ export const AuthProvider = ({ children }) => {
     const [authData, setAuthData] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Check and persist session from localStorage initially
     useEffect(() => {
-        // Check localStorage for persisted session immediately
         const storedSession = localStorage.getItem('supabaseSession');
         if (storedSession) {
             setAuthData(JSON.parse(storedSession));
-            setLoading(false);
-        } else {
-            setLoading(false);
         }
+        setLoading(false);
+    }, []);
 
-        // Get latest session from Supabase in background
+    // Get the latest session from Supabase and update context
+    useEffect(() => {
         const getInitialSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Error fetching session:', error);
+            }
             setAuthData(session);
-            // Persist session if available
             if (session) {
                 localStorage.setItem('supabaseSession', JSON.stringify(session));
             } else {
@@ -33,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
         getInitialSession();
 
-        // Listen for authentication state changes
+        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setAuthData(session);
             if (session) {
@@ -43,9 +46,7 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        return () => {
-            subscription.unsubscribe();
-        };
+        return () => subscription.unsubscribe();
     }, []);
 
     if (loading) {

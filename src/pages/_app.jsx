@@ -3,18 +3,20 @@ import '../styles/globals.css';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthProvider } from '../context/AuthContext';
+import { AuthProvider } from '@/context/AuthContext';
 import Layout from '@/components/Layout';
 import { useEffect, useState } from 'react';
 import Loader from '@/components/Loader';
 import Router from 'next/router';
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 
 function MyApp({ Component, pageProps }) {
   const [loading, setLoading] = useState(false);
 
-  // Loader for route change
+  // Global loader for route changes
   useEffect(() => {
     const handleStart = () => setLoading(true);
     const handleComplete = () => setLoading(false);
