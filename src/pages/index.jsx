@@ -1,68 +1,56 @@
 // File: pages/index.js
-import { withAuth } from '@/utils/withAuth'
-
 import { useState, useEffect } from 'react';
+import FileUpload from '@/components/FileUpload';
+import DashboardTable from '@/components/DashboardTable';
+import { withAuth } from '@/utils/withAuth';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const HomePage = () => {
-  const [file, setFile] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState('');
   const [stats, setStats] = useState([]);
+  const [socketData, setSocketData] = useState(null);
 
-  // Example: Fetch stats on component mount
-  useEffect(() => {
-    fetch('/api/stats')
-      .then(async (res) => {
-        const { data, success } = await res.json()
-        if (success) {
-          setStats(data)
-        } else {
-          console.error('Error fetching stats:', data)
-        }
-      })
-      .catch((err) => console.error('Error fetching stats:', err));
-  }, []);
-
-  // Example: WebSocket connection for live updates
+  // WebSocket integration for live updates
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:3000/api/live-stats');
     socket.onmessage = (event) => {
-      // Update UI based on live stats
-      console.log('Live update:', event.data);
+      try {
+        const data = JSON.parse(event.data);
+        setSocketData(data);
+      } catch (e) {
+        console.error('Error parsing WebSocket data:', e);
+      }
     };
-    return () => socket.close();
+    socket.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
+    return () => {
+      socket.close();
+    };
   }, []);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+  // Function to handle successful file upload
+  const handleUploadSuccess = (data) => {
+    // Optionally, you can update stats or trigger a refetch here
+    console.log('Upload success:', data);
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const res = await fetch('/api/upload-logs', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json();
-    setUploadMessage(data.message);
-  };
+  // For demonstration, merge WebSocket data with current stats
+  // In a real app, you might want to merge or refetch data from an API
+  useEffect(() => {
+    if (socketData) {
+      setStats((prevStats) => [socketData, ...prevStats]);
+    }
+  }, [socketData]);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload Log File</button>
-      <p>{uploadMessage}</p>
-      <div>
-        <h2>Stats</h2>
-        {/* Render stats in a table or list */}
-        {stats.map((stat, index) => (
-          <div key={index}>{JSON.stringify(stat)}</div>
-        ))}
+    <ErrorBoundary>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+        <FileUpload onUploadSuccess={handleUploadSuccess} />
+        <DashboardTable stats={stats} />
       </div>
-    </div>
+    </ErrorBoundary>
   );
-}
+};
+
 export default withAuth(HomePage);
