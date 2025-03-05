@@ -11,7 +11,9 @@ import { CustomButton, CustomInput, CustomCard } from '@/components/ui';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { authData, setAuthData } = useContext(AuthContext);
+
     const router = useRouter();
 
     // Redirect immediately if user is already logged in
@@ -29,6 +31,7 @@ const Login = () => {
     // Function to handle login submission
     const handleLogin = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
             toast.error(error.message);
@@ -38,6 +41,7 @@ const Login = () => {
             toast.success('Login successful');
             router.push('/');
         }
+        setIsLoading(false);
     };
 
     return (
@@ -60,7 +64,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <CustomButton type="submit" className="w-100">
+                            <CustomButton type="submit" className="w-100" loading={isLoading}>
                                 Login
                             </CustomButton>
                         </Form>
