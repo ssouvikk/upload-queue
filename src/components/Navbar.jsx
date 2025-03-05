@@ -11,7 +11,7 @@ const AppNavbar = () => {
     const { setAuthData } = useContext(AuthContext);
     const router = useRouter();
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         supabase.auth.signOut();
         setAuthData(null);
         localStorage.removeItem('supabaseSession');
